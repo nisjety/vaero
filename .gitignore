@@ -32,6 +32,10 @@ pnpm-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# GitHub
+.github/*
+!.github/workflows
+
 # Environment
 .env
 .env.*
