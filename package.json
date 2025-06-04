@@ -1,0 +1,35 @@
+{
+  "private": true,
+  "name": "vaero",
+  "version": "1.0.0",
+  "description": "Væro er din nye digitale værkompis som kombinerer pålitelige lokale værdata med smart AI-hjelp – helt gratis og alltid tilgjengelig. Med Væro får du presis, oppdatert værmelding fra Yr (Norges ledende værvarslingstjeneste), utvalgt og bufret for raskt oppslag.",
+  "tagline": "Væro – værinformasjon som gir deg ro i sjelen",
+  "longDescription": "Væro er din nye digitale værkompis som kombinerer pålitelige lokale værdata med smart AI-hjelp – helt gratis og alltid tilgjengelig. Med Væro får du:\n\nPresis, oppdatert værmelding fra Yr (Norges ledende værvarslingstjeneste), utvalgt og bufret for raskt oppslag.\n\nPersonlige klesforslag basert på sanntidsdata: AI-en analyserer temperatur, regn- og vindforhold, og dine preferanser, og foreslår nøyaktig hva du bør ta på deg.\n\nBeroligende varsler som gir deg ro i sinnet: Når temperaturen faller under frysepunktet, sjansen for regn overstiger ditt eget tak, eller uvær truer, sender Væro push-varsler via mobil eller nettleser – så du rekker å forberede deg.\n\nDaglig oppsummering og aktivitetsråd: Hver morgen får du en kort, konsis oppsummering av dagens og morgendagens vær, pluss anbefalinger for aktiviteter tilpasset forholdene (gå tur, løpe, kafébesøk eller innendørsalternativer).\n\nEgne favorittlokasjoner: Legg inn hjemstedet ditt, hytta på fjellet eller jobbadressen, og bytt raskt mellom flere steder. Væro husker også sist brukte sted hvis du er på farten.\n\nSømløs brukeropplevelse med norsk språk, rolig fargepalett og intuitiv design – med \"Væro\" i lomma får du være etter vær, ikke være bekymret.\n\nUansett om du planlegger tur i marka, pendler til jobb, eller bare vil vite om du bør ta med jakke i dag, gir Væro deg det du trenger – enkelt, beroligende og alltid oppdatert. Løsningen er laget for å gjøre hverdagen din litt lettere, slik at du kan fokusere på det som virkelig betyr noe.\n\nLast ned Væro i dag, og opplev ro i sjelen gjennom værmeldinger som leder deg trygt gjennom enhver værhendelse.",
+  "workspaces": [
+    "apps/web",
+    "apps/mobile",
+    "apps/backend",
+    "packages/lib",
+    "packages/ui"
+  ],
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:backend": "pnpm --filter \"apps/backend\" test",
+    "test:web": "pnpm --filter \"apps/web\" test",
+    "test:mobile": "pnpm --filter \"apps/mobile\" test"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.33.1",
+    "@typescript-eslint/parser": "^8.33.1",
+    "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.4.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
+  }
+}
