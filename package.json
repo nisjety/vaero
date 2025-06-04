@@ -18,7 +18,18 @@
     "format:check": "prettier --check .",
     "test:backend": "pnpm --filter \"apps/backend\" test",
     "test:web": "pnpm --filter \"apps/web\" test",
-    "test:mobile": "pnpm --filter \"apps/mobile\" test"
+    "test:mobile": "pnpm --filter \"apps/mobile\" test",
+    "dev:db": "docker-compose -f docker-compose.dev.yml up -d",
+    "dev:db:down": "docker-compose -f docker-compose.dev.yml down",
+    "dev:backend": "pnpm --filter \"apps/backend\" dev",
+    "build:backend": "pnpm --filter \"apps/backend\" build",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "db:migrate": "pnpm --filter \"apps/backend\" prisma migrate dev",
+    "db:migrate:deploy": "pnpm --filter \"apps/backend\" prisma migrate deploy",
+    "db:generate": "pnpm --filter \"apps/backend\" prisma generate",
+    "db:studio": "pnpm --filter \"apps/backend\" prisma studio"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.33.1",

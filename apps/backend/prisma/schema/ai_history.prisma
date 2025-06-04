@@ -1,0 +1,13 @@
+model AIHistory {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  timestamp    DateTime @default(now())
+  type         String   // "dailySummary", "activitySuggestion", "clothingSuggestion", "packingList", "userQuestion"
+  promptInput  String
+  aiResponse   String
+  metadata     Json     // { items, notes, cacheKey }
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_histories")
+}

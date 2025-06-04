@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int        @id @default(autoincrement())
+  clerkUserId    String     @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  prefs          UserPrefs?
+  devices        Device[]
+  aiHistories    AIHistory[]
+  weatherSnapshot WeatherSnapshot?
+
+  @@map("users")
+}
+
+model UserPrefs {
+  id                 Int      @id @default(autoincrement())
+  userId             Int      @unique
+  unit               String   @default("metric") // "imperial" support
+  timeFormat         String   @default("24h")     // "12h"
+  defaultLat         Float?   
+  defaultLon         Float?
+  stylePreferences   Json?    // e.g. { gender, brandPreferences }
+  notifTempBelow     Float?   // e.g. -5.0
+  notifTempAbove     Float?   // e.g. 30.0
+  notifRainProb      Int?     // e.g. 60
+
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_prefs")
+}
+
+model Device {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  platform   String   // "ios", "android", "web"
+  pushToken  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("devices")
+}
+
+model WeatherSnapshot {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  timestamp   DateTime @default(now())
+  lat         Float
+  lon         Float
+  currentTemp Float
+  symbolCode  String
+  rawData     Json
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("weather_snapshots")
+}
+
+model AIHistory {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  timestamp    DateTime @default(now())
+  type         String   // "dailySummary", "activitySuggestion", "clothingSuggestion", "packingList", "userQuestion"
+  promptInput  String
+  aiResponse   String
+  metadata     Json     // { items, notes, cacheKey }
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_histories")
+}

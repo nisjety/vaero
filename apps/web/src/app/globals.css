@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS properties for Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap');
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-weather-snow text-weather-storm font-sans antialiased;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Weather Card Components */
+  .weather-card {
+    @apply bg-white/10 backdrop-blur-weather border border-white/20 rounded-weather shadow-weather;
+  }
+  
+  .weather-card-large {
+    @apply bg-white/10 backdrop-blur-weather border border-white/20 rounded-weather-lg shadow-weather-lg p-6;
+  }
+  
+  /* Temperature Display */
+  .temp-display {
+    @apply text-4xl md:text-6xl font-bold text-white;
+  }
+  
+  .temp-small {
+    @apply text-lg font-semibold text-white/90;
+  }
+  
+  /* Weather Icon Containers */
+  .weather-icon {
+    @apply w-16 h-16 object-contain;
+  }
+  
+  .weather-icon-small {
+    @apply w-8 h-8 object-contain;
+  }
+  
+  /* Gradient Backgrounds */
+  .bg-weather-primary {
+    @apply bg-weather-gradient;
+  }
+  
+  .bg-weather-dawn {
+    @apply bg-dawn-gradient;
+  }
+  
+  .bg-weather-night {
+    @apply bg-night-gradient;
+  }
+  
+  .bg-weather-aurora {
+    @apply bg-aurora-gradient;
+  }
+  
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-weather-purple hover:bg-weather-dusk text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-white/20 hover:bg-white/30 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 backdrop-blur-sm;
+  }
+  
+  /* Form Controls */
+  .input-weather {
+    @apply bg-white/10 border border-white/20 text-white placeholder:text-white/60 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-weather-aurora backdrop-blur-sm;
+  }
+  
+  /* Loading States */
+  .loading-skeleton {
+    @apply animate-pulse bg-white/20 rounded;
+  }
+  
+  /* Notification Styles */
+  .notification-success {
+    @apply bg-weather-aurora/20 border border-weather-aurora/30 text-weather-aurora;
+  }
+  
+  .notification-warning {
+    @apply bg-weather-sunset/20 border border-weather-sunset/30 text-weather-sunset;
+  }
+  
+  .notification-error {
+    @apply bg-red-500/20 border border-red-500/30 text-red-400;
+  }
+}
+
+@layer utilities {
+  /* Text Utilities */
+  .text-shadow {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Animation Utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  /* Backdrop Utilities */
+  .backdrop-weather {
+    backdrop-filter: blur(12px);
+  }
+  
+  /* Norwegian Weather Theme Utilities */
+  .time-of-day-morning {
+    @apply bg-dawn-gradient;
+  }
+  
+  .time-of-day-day {
+    @apply bg-weather-gradient;
+  }
+  
+  .time-of-day-evening {
+    @apply bg-aurora-gradient;
+  }
+  
+  .time-of-day-night {
+    @apply bg-night-gradient;
+  }
+}
