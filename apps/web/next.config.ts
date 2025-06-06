@@ -1,12 +1,15 @@
-import type { NextConfig } from "next";
-import path from "path";
+// next.config.js eller next.config.ts
+
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': path.resolve(__dirname, 'src'),
-    };
+  output: 'standalone',
+
+  // Valgfri WebSocket-tilpasning (brukes i ditt tilfelle)
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [...(config.externals || []), 'ws', 'bufferutil', 'utf-8-validate'];
+    }
     return config;
   },
 };

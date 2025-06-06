@@ -1,0 +1,82 @@
+# Build stage
+FROM node:18-alpine AS builder
+
+# Install system dependencies
+RUN apk add --no-cache libc6-compat openssl curl
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set working directory
+WORKDIR /app
+
+# Copy root package files for workspace setup
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY tsconfig.base.json ./
+
+# Copy web app package files
+COPY apps/web/package.json ./apps/web/
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy web app source code
+COPY apps/web ./apps/web
+
+# Build the Next.js application
+WORKDIR /app/apps/web
+RUN pnpm build
+
+# Production stage
+FROM node:18-alpine AS runner
+
+# Install system dependencies
+RUN apk add --no-cache curl
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set working directory
+WORKDIR /app
+
+# Copy root package files for workspace setup
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY tsconfig.base.json ./
+
+# Copy web app package files and install production dependencies
+COPY apps/web/package.json ./apps/web/
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built application from builder stage
+COPY --from=builder /app/apps/web/.next ./apps/web/.next
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/next.config.ts ./apps/web/
+COPY --from=builder /app/apps/web/postcss.config.* ./apps/web/
+COPY --from=builder /app/apps/web/tailwind.config.js ./apps/web/
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Change ownership
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Set working directory to web app
+WORKDIR /app/apps/web
+
+# Expose port
+EXPOSE 3000
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start the application
+CMD ["pnpm", "start"]

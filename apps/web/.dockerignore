@@ -1,0 +1,53 @@
+# -------------------------------
+# Dependencies (lokale installs)
+node_modules
+.pnp
+.pnp.js
+*.tgz
+
+# -------------------------------
+# Build artifacts
+.next
+dist
+out
+build
+apps/**/.next
+apps/**/dist
+apps/**/build
+
+# -------------------------------
+# Environment config
+.env
+.env.*
+!.env.example
+
+# -------------------------------
+# IDEs & Editors
+.vscode
+.idea
+*.swp
+*.swo
+
+# -------------------------------
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# -------------------------------
+# Git
+.git
+.gitignore
+
+# -------------------------------
+# Test artifacts
+coverage
+.nyc_output
+jest.config.js
+jest.setup.js
+*.spec.ts
+*.test.ts
+
+# -------------------------------
+# CI/CD caches
+.cache
+turbo
