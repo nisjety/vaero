@@ -1,19 +1,31 @@
-'use client';
+// src/components/ai/daily-summary.tsx
+"use client";
 
-import { BookOpen, Sparkles } from 'lucide-react';
+import { useAuth } from "@clerk/nextjs";
+import { BookOpen, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface DailySummaryProps {
   summary?: string;
   isLoading?: boolean;
 }
 
-export default function DailySummary({ summary, isLoading }: DailySummaryProps) {
+export function DailySummary({
+  summary,
+  isLoading = false,
+}: DailySummaryProps) {
+  const { isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  // Auth is now handled at the page level
+  if (!isSignedIn) return null;
   if (isLoading) {
     return (
-      <div className="weather-card">
+      <div className="weather-card p-6">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <BookOpen className="h-5 w-5 text-aurora-400" />
-          Today's Weather Summary
+          <BookOpen className="h-5 w-5 text-[var(--weather-dark)]" />
+          Dagens sammendrag
         </h3>
         <div className="animate-pulse space-y-2">
           <div className="h-4 bg-white/10 rounded w-full"></div>
@@ -26,31 +38,31 @@ export default function DailySummary({ summary, isLoading }: DailySummaryProps) 
 
   if (!summary) {
     return (
-      <div className="weather-card">
+      <div className="weather-card p-6">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <BookOpen className="h-5 w-5 text-aurora-400" />
-          Today's Weather Summary
+          <BookOpen className="h-5 w-5 text-[var(--weather-dark)]" />
+          Dagens sammendrag
         </h3>
-        <div className="text-center text-mist-400 py-8">
+        <div className="text-center text-[var(--text-secondary)] py-8">
           <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p>AI weather summary will appear here</p>
+          <p>AI‐værssammendrag vil dukke opp her</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="weather-card">
+    <div className="weather-card p-6">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <BookOpen className="h-5 w-5 text-aurora-400" />
-        Today's Weather Summary
-        <Sparkles className="h-4 w-4 text-aurora-300 ml-1" />
+        <BookOpen className="h-5 w-5 text-[var(--weather-dark)]" />
+        Dagens sammendrag
+        <Sparkles className="h-4 w-4 text-[var(--weather-dark)] ml-1" />
       </h3>
-      
-      <div className="p-4 bg-gradient-to-br from-aurora-500/10 to-dawn-500/10 rounded-xl border border-aurora-400/20">
+
+      <div className="p-4 bg-[var(--weather-gradient)]/10 rounded-xl border border-[var(--weather-gradient)]/20">
         <div className="flex items-start gap-3">
-          <Sparkles className="h-5 w-5 text-aurora-300 mt-0.5 flex-shrink-0" />
-          <p className="text-mist-100 leading-relaxed">
+          <Sparkles className="h-5 w-5 text-[var(--weather-dark)] mt-0.5 flex-shrink-0" />
+          <p className="text-[var(--text-light)] text-sm leading-relaxed">
             {summary}
           </p>
         </div>

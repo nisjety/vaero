@@ -1,15 +1,18 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useApi } from '@/lib/api';
+// src/hooks/api.ts
 
-// Types based on the backend API
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
+import { api } from "../lib/api"; // Axios‐instansen din
+
+// =============================================================================
+// 1) Type­definisjoner basert på backend­APIet
+// =============================================================================
 export interface CurrentWeather {
   time: string;
   temperature: number;
   symbol_code: string;
   wind_speed: number;
   precipitation_probability: number;
-  humidity?: number;
-  pressure?: number;
   visibility?: number;
 }
 
@@ -71,8 +74,8 @@ export interface AskAIResponse {
 }
 
 export interface UserPrefs {
-  unit: 'metric' | 'imperial';
-  timeFormat: '24h' | '12h';
+  unit: "metric" | "imperial";
+  timeFormat: "24h" | "12h";
   defaultLat?: number;
   defaultLon?: number;
   stylePreferences?: {
@@ -85,108 +88,245 @@ export interface UserPrefs {
   notifRainProb?: number;
 }
 
-// Weather hooks
-export const useWeatherWithAI = (lat: number, lon: number) => {
-  const api = useApi();
-  
+// =============================================================================
+// 2) Hook: useCurrentWeather (offentlig weather‐data, ingen auth kreves)
+// =============================================================================
+export const useCurrentWeather = (lat: number, lon: number) => {
+  return useQuery<CurrentWeather>({
+    queryKey: ["currentWeather", lat, lon],
+    queryFn: async () => {
+      const response = await api.get<CurrentWeather>("/weather/current", {
+        params: { lat, lon },
+      });
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutter
+    enabled: Boolean(lat && lon),
+  });
+};
+
+// =============================================================================
+// 3) Hook: useWeatherWithAI (beskyttet, krever at bruker er logget inn)
+// =============================================================================
+export function useWeatherWithAI(lat: number, lon: number, options?: any) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+
   return useQuery<WeatherWithAI>({
-    queryKey: ['weatherWithAI', lat, lon],
+    queryKey: ["weatherWithAI", lat, lon],
     queryFn: async () => {
-      const { data } = await api.get('/weather', { params: { lat, lon } });
-      return data;
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    enabled: Boolean(lat && lon),
-  });
-};
+      // Fallback til mock data hvis ikke autentisert (for demo)
+      if (!isSignedIn) {
+        return {
+          current: {
+            time: new Date().toISOString(),
+            temperature: 14,
+            symbol_code: 'cloudy',
+            wind_speed: 5.5,
+            precipitation_probability: 50,
+            visibility: 18,
+          },
+          hourly: Array.from({ length: 24 }, (_, i) => ({
+            time: new Date(Date.now() + i * 60 * 60 * 1000).toISOString(),
+            temperature: 14 + Math.sin(i / 4) * 3,
+            symbol_code: i < 8 ? 'cloudy' : 'partlycloudy',
+            precipitation_probability: Math.max(0, 50 - i * 2),
+            wind_speed: 5.5 + Math.random() * 2,
+          })),
+          daily: Array.from({ length: 7 }, (_, i) => ({
+            date: new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString(),
+            maxTemp: 14 + Math.random() * 5,
+            minTemp: 8 + Math.random() * 3,
+            symbol_code: i % 2 === 0 ? 'cloudy' : 'partlycloudy',
+            precipitation_probability: Math.max(0, 50 - i * 5),
+          })),
+          clothingSuggestion: {
+            items: ['Lett jakke', 'Genser', 'Lange bukser'],
+            explanation: 'Kjølig og skyet vær, kle deg i lag',
+          },
+        };
+      }
 
-export const useDailySummary = (lat: number, lon: number) => {
-  const api = useApi();
-  
+      // Hent gyldig Clerk‐token (forutsetter at isLoaded && isSignedIn er true)
+      const token = await getToken();
+      const response = await api.get<WeatherWithAI>("/weather/current", {
+        params: { lat, lon },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    },
+    enabled: Boolean(lat && lon && isLoaded),
+    retry: (failureCount, error: any) => {
+      // Ikke retry ved 401 (ikke autentisert)
+      if (error?.response?.status === 401) return false;
+      return failureCount < 2;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutter
+    ...options,
+  });
+}
+
+// =============================================================================
+// 4) Hook: useDailySummary (beskyttet AI‐sammendrag)
+// =============================================================================
+export function useDailySummary(lat: number, lon: number) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+
   return useQuery<DailySummary>({
-    queryKey: ['dailySummary', lat, lon],
+    queryKey: ["dailySummary", lat, lon],
     queryFn: async () => {
-      const { data } = await api.get('/ai/daily-summary', { params: { lat, lon } });
-      return data;
-    },
-    staleTime: 1000 * 60 * 60 * 6, // 6 hours
-    enabled: Boolean(lat && lon),
-  });
-};
+      // Fallback til mock data hvis ikke autentisert (for demo)
+      if (!isSignedIn) {
+        return {
+          summary: 'Variabel skydekke med snøbyger. Høy 14°C. Vind Ø på 10 til 20 mph. Sannsynlighet for snø 50%. Snøakkumulasjoner mindre enn en tomme.',
+        };
+      }
 
-export const useActivitySuggestion = (lat: number, lon: number, date: string) => {
-  const api = useApi();
-  
-  return useQuery<ActivitySuggestion>({
-    queryKey: ['activitySuggestion', lat, lon, date],
-    queryFn: async () => {
-      const { data } = await api.get('/ai/activity', { params: { lat, lon, date } });
-      return data;
+      // Hent Clerk‐token etter auth‐sjekk
+      const token = await getToken();
+      const response = await api.get<DailySummary>("/ai/daily-summary", {
+        params: { lat, lon },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
     },
-    staleTime: 1000 * 60 * 60 * 12, // 12 hours
-    enabled: Boolean(lat && lon && date),
+    enabled: Boolean(lat && lon && isLoaded),
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401) return false;
+      return failureCount < 2;
+    },
+    staleTime: 1000 * 60 * 60, // 1 time
   });
-};
+}
 
-// AI Mutations
+// =============================================================================
+// 5) Hook: usePackingList (AI‐mutasjon, krever ingen session‐token hvis din backend
+//    ikke beskytter denne ruten. Legg til token‐header hvis nødvendig.)
+// =============================================================================
 export const usePackingList = () => {
-  const api = useApi();
-  
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+
   return useMutation<PackingList, Error, PackingListRequest>({
     mutationFn: async (request) => {
-      const { data } = await api.post('/ai/packing-list', request);
-      return data;
+      // Hvis autentisert, send med token
+      if (isLoaded && isSignedIn) {
+        const token = await getToken();
+        const response = await api.post<PackingList>("/ai/packing-list", request, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+      } else {
+        // Fallback uten autentisering
+        const response = await api.post<PackingList>("/ai/packing-list", request);
+        return response.data;
+      }
     },
+    // Du kan eventuelt legge til onError/onSuccess callbacks her
   });
 };
 
+// =============================================================================
+// 6) Hook: useAskAI (AI‐mutasjon for fri tekst‐forespørsel)
+// =============================================================================
 export const useAskAI = () => {
-  const api = useApi();
-  
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+
   return useMutation<AskAIResponse, Error, AskAIRequest>({
     mutationFn: async (request) => {
-      const { data } = await api.post('/ai/ask', request);
-      return data;
+      // Hvis autentisert, send med token
+      if (isLoaded && isSignedIn) {
+        const token = await getToken();
+        const response = await api.post<AskAIResponse>("/ai/ask", request, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+      } else {
+        // Fallback uten autentisering
+        const response = await api.post<AskAIResponse>("/ai/ask", request);
+        return response.data;
+      }
     },
   });
 };
 
-// User preferences hooks
-export const useUserPrefs = () => {
-  const api = useApi();
-  
+// =============================================================================
+// 7) Hook: useUserPrefs (henter brukerinnstillinger, beskyttet rute)
+// =============================================================================
+export function useUserPrefs() {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+
   return useQuery<UserPrefs>({
-    queryKey: ['userPrefs'],
+    queryKey: ["userPrefs"],
     queryFn: async () => {
-      const { data } = await api.get('/users/me/prefs');
-      return data;
+      const token = await getToken();
+      const response = await api.get<UserPrefs>("/users/me/prefs", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
     },
-    staleTime: 1000 * 60 * 30, // 30 minutes
+    enabled: Boolean(isLoaded && isSignedIn),
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401) return false;
+      return failureCount < 2;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutter
   });
-};
+}
 
+// =============================================================================
+// 8) Hook: useUpdateUserPrefs (oppdaterer brukerinnstillinger)
+// =============================================================================
 export const useUpdateUserPrefs = () => {
-  const api = useApi();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const queryClient = useQueryClient();
-  
+
   return useMutation<UserPrefs, Error, Partial<UserPrefs>>({
     mutationFn: async (prefs) => {
-      const { data } = await api.put('/users/me/prefs', prefs);
-      return data;
+      if (!isLoaded || !isSignedIn) {
+        throw new Error("Bruker må være logget inn for å oppdatere innstillinger");
+      }
+      
+      const token = await getToken();
+      const response = await api.put<UserPrefs>("/users/me/prefs", prefs, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['userPrefs'] });
+      // Når oppdatering lykkes, invalideres cache for brukerinnstillinger
+      queryClient.invalidateQueries({ queryKey: ["userPrefs"] });
     },
   });
 };
 
-// Device registration
+// =============================================================================
+// 9) Hook: useRegisterDevice (registrerer push‐device til backend, beskyttet)
+// =============================================================================
 export const useRegisterDevice = () => {
-  const api = useApi();
-  
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+
   return useMutation<void, Error, { platform: string; pushToken: string }>({
     mutationFn: async (device) => {
-      await api.post('/users/me/device', device);
+      // Hvis backend krever autentisering, hent token først
+      if (isLoaded && isSignedIn) {
+        const token = await getToken();
+        await api.post(
+          "/users/me/device",
+          { platform: device.platform, pushToken: device.pushToken },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        // Hvis ikke autentisert, kast feil
+        throw new Error("Bruker må være logget inn for å registrere enhet");
+      }
+    },
+    onError: (error) => {
+      console.error("Kunne ikke registrere device:", error);
     },
   });
 };

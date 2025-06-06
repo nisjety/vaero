@@ -26,6 +26,6 @@
       "@lib/*": ["../../packages/lib/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/three/clouds.js"],
   "exclude": ["node_modules"]
 }

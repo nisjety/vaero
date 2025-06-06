@@ -1,52 +1,50 @@
 'use client';
 
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Component, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
-interface ErrorBoundaryState {
+interface Props {
+  children: ReactNode;
+}
+
+interface State {
   hasError: boolean;
   error?: Error;
 }
 
-interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode;
-}
+export class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false,
+  };
 
-export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Uncaught error:', error, errorInfo);
   }
 
-  render() {
+  public render() {
     if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-
       return (
-        <div className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center">
-          <AlertTriangle className="h-12 w-12 text-amber-400 mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">Something went wrong</h3>
-          <p className="text-mist-300 mb-4 max-w-md">
-            {this.state.error?.message || 'An unexpected error occurred'}
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="flex items-center gap-2 px-4 py-2 bg-storm-600 hover:bg-storm-700 text-white rounded-lg transition-colors"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Reload page
-          </button>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#6BA6FF] via-[#5A96ED] to-[#4A86DC]">
+          <div className="text-center text-white p-8">
+            <div className="mb-4">
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">⚠️</span>
+              </div>
+            </div>
+            <h2 className="text-2xl font-light mb-2">Something went wrong</h2>
+            <p className="text-white/70 mb-4">
+              We're sorry, but there was an error loading the weather dashboard.
+            </p>
+            <button
+              onClick={() => this.setState({ hasError: false })}
+              className="px-6 py-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 text-white hover:bg-white/20 transition-all"
+            >
+              Try again
+            </button>
+          </div>
         </div>
       );
     }

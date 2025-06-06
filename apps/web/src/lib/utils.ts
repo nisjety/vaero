@@ -1,4 +1,12 @@
+// src/lib/utils.ts
 import { format, parseISO, isToday, isTomorrow } from 'date-fns';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility function for conditional class names
+export const cn = (...inputs: ClassValue[]) => {
+  return twMerge(clsx(inputs));
+};
 
 // Temperature formatting
 interface TemperatureOptions {
@@ -11,6 +19,10 @@ export const formatTemperature = (
   options: TemperatureOptions = {}
 ): string => {
   const { showUnit = true } = options;
+  
+  if (typeof value !== 'number' || isNaN(value)) {
+    return '--';
+  }
   
   if (unit === 'imperial') {
     const fahrenheit = Math.round(value * 9 / 5 + 32);
@@ -266,6 +278,9 @@ export const categorizeClothesByType = (items: string[]): Record<string, string[
     Object.entries(categories).filter(([_, items]) => items.length > 0)
   );
 };
+
+// Alias for clothing categorization
+export const categorizeClothingItems = categorizeClothesByType;
 
 // Location utilities
 export const formatLocationName = (lat: number, lon: number): string => {

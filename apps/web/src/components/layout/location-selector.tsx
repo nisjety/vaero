@@ -1,54 +1,70 @@
-'use client';
+// src/components/layout/location-selector.tsx
+"use client";
 
-import { useState, useEffect } from 'react';
-import { MapPin, Loader2, Search, Navigation } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { MapPin, Loader2, Search, Navigation } from "lucide-react";
 
 interface LocationSelectorProps {
-  onLocationChange: (location: { lat: number; lon: number; name?: string }) => void;
+  onLocationChange: (location: {
+    lat: number;
+    lon: number;
+    name?: string;
+  }) => void;
   defaultLocation?: { lat: number; lon: number; name?: string };
+  isLoading?: boolean;
+  currentLocation?: { lat: number; lon: number; name?: string };
 }
 
-export default function LocationSelector({ onLocationChange, defaultLocation }: LocationSelectorProps) {
-  const [isLoadingGeolocation, setIsLoadingGeolocation] = useState(false);
+export function LocationSelector({
+  onLocationChange,
+  defaultLocation,
+  currentLocation,
+  isLoading: externalLoading = false,
+}: LocationSelectorProps) {
+  const [isLoadingGeolocation, setIsLoadingGeolocation] =
+    useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [currentLocation, setCurrentLocation] = useState(defaultLocation);
+  const [localCurrentLocation, setLocalCurrentLocation] =
+    useState(defaultLocation);
 
-  // Get user's current location
+  // Hent brukerens nåværende posisjon
   const getCurrentLocation = async () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      alert("Geolokasjon støttes ikke av nettleseren din");
       return;
     }
 
     setIsLoadingGeolocation(true);
-    
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const location = {
           lat: position.coords.latitude,
           lon: position.coords.longitude,
-          name: 'Current Location'
+          name: "Nåværende posisjon",
         };
-        setCurrentLocation(location);
+        setLocalCurrentLocation(location);
         onLocationChange(location);
         setIsLoadingGeolocation(false);
       },
       (error) => {
-        console.error('Error getting location:', error);
-        alert('Unable to get your location. Please search for a location manually.');
+        console.error("Kunne ikke hente posisjon:", error);
+        alert(
+          "Kunne ikke hente din posisjon. Vennligst søk manuelt etter en lokasjon."
+        );
         setIsLoadingGeolocation(false);
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 300000, // 5 minutes
+        maximumAge: 300000,
       }
     );
   };
 
-  // Search for locations using Nominatim (OpenStreetMap)
+  // Søk etter byer i Norge m.m. (Nominatim)
   const searchLocations = async (query: string) => {
     if (query.length < 3) {
       setSearchResults([]);
@@ -56,27 +72,31 @@ export default function LocationSelector({ onLocationChange, defaultLocation }: 
     }
 
     setIsSearching(true);
-    
+
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(query)}&countrycodes=no,se,dk,fi`
+        `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(
+          query
+        )}&countrycodes=no,se,dk,fi`
       );
       const results = await response.json();
-      
-      setSearchResults(results.map((result: any) => ({
-        name: result.display_name,
-        lat: parseFloat(result.lat),
-        lon: parseFloat(result.lon),
-      })));
+
+      setSearchResults(
+        results.map((result: any) => ({
+          name: result.display_name,
+          lat: parseFloat(result.lat),
+          lon: parseFloat(result.lon),
+        }))
+      );
     } catch (error) {
-      console.error('Error searching locations:', error);
+      console.error("Feil ved søk etter lokasjon:", error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Debounced search
+  // Debounced‐søk
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchQuery) {
@@ -89,64 +109,78 @@ export default function LocationSelector({ onLocationChange, defaultLocation }: 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  const selectLocation = (location: { lat: number; lon: number; name: string }) => {
-    setCurrentLocation(location);
+  const selectLocation = (location: {
+    lat: number;
+    lon: number;
+    name: string;
+  }) => {
+    setLocalCurrentLocation(location);
     onLocationChange(location);
-    setSearchQuery('');
+    setSearchQuery("");
     setSearchResults([]);
   };
 
   return (
-    <div className="weather-card">
+    <div className="weather-card p-6">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <MapPin className="h-5 w-5 text-aurora-400" />
-        Location
+        <MapPin className="h-5 w-5 text-[var(--weather-dark)]" />
+        Lokasjon
       </h3>
-      
+
       <div className="space-y-4">
-        {/* Current location display */}
-        {currentLocation && (
-          <div className="p-3 bg-aurora-500/20 rounded-xl border border-aurora-400/30">
-            <div className="flex items-center gap-2 text-aurora-300 text-sm font-medium">
+        {/* Viser nåværende lokasjon om tilgjengelig */}
+        {(localCurrentLocation || currentLocation) && (
+          <div className="p-3 bg-[var(--weather-gradient)]/20 rounded-xl border border-[var(--weather-gradient)]/30">
+            <div className="flex items-center gap-2 text-[var(--weather-dark)] text-sm font-medium">
               <MapPin className="h-4 w-4" />
-              <span>Current: {currentLocation.name || `${currentLocation.lat.toFixed(2)}, ${currentLocation.lon.toFixed(2)}`}</span>
+              <span>
+                Nåværende:{" "}
+                {localCurrentLocation?.name ||
+                  currentLocation?.name ||
+                  `${(localCurrentLocation?.lat ?? currentLocation?.lat)?.toFixed(
+                    2
+                  )}, ${(localCurrentLocation?.lon ??
+                    currentLocation?.lon)?.toFixed(2)}`}
+              </span>
             </div>
           </div>
         )}
 
-        {/* Get current location button */}
+        {/* Knapp for å hente nåværende posisjon */}
         <button
           onClick={getCurrentLocation}
-          disabled={isLoadingGeolocation}
-          className="w-full flex items-center justify-center gap-2 p-3 bg-storm-600 hover:bg-storm-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors"
+          disabled={isLoadingGeolocation || externalLoading}
+          className="w-full flex items-center justify-center gap-2 p-3 bg-[var(--weather-dark)] hover:bg-[var(--weather-light)] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors"
         >
-          {isLoadingGeolocation ? (
+          {isLoadingGeolocation || externalLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Navigation className="h-4 w-4" />
           )}
-          {isLoadingGeolocation ? 'Getting location...' : 'Use current location'}
+          {isLoadingGeolocation || externalLoading
+            ? "Henter posisjon..."
+            : "Bruk nåværende posisjon"}
         </button>
 
-        {/* Location search */}
+        {/* Søkefelt for å søke manuelt */}
         <div className="relative">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-mist-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--text-secondary)]" />
             <input
               type="text"
-              placeholder="Search for a city in Norway..."
+              placeholder="Søk etter by i Norge..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-mist-400 focus:outline-none focus:ring-2 focus:ring-aurora-400 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 bg-[var(--card-bg)] border border-white/25 rounded-xl text-white placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--weather-dark)] focus:border-transparent"
             />
             {isSearching && (
-              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-mist-400" />
+              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-[var(--text-secondary)]" />
             )}
           </div>
 
-          {/* Search results */}
+          {/* Viser søkeresultater i en dropdown */}
           {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/20 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--weather-dark)] border border-white/25 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
               {searchResults.map((result, index) => (
                 <button
                   key={index}
@@ -156,7 +190,7 @@ export default function LocationSelector({ onLocationChange, defaultLocation }: 
                   <div className="text-white text-sm font-medium truncate">
                     {result.name}
                   </div>
-                  <div className="text-mist-400 text-xs">
+                  <div className="text-[var(--text-secondary)] text-xs">
                     {result.lat.toFixed(2)}, {result.lon.toFixed(2)}
                   </div>
                 </button>

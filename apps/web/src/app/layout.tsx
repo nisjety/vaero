@@ -1,51 +1,62 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { ClerkProvider } from '@clerk/nextjs';
-import { Providers } from './providers';
+import { ClerkProvider } from "@clerk/nextjs";
+import { Providers } from "./providers";
+import ThreeClouds from "../components/three/ThreeClouds";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
-
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Væro - Norwegian Weather Intelligence",
-  description: "AI-powered weather forecasting with personalized insights for Norway. Get clothing suggestions, activity recommendations, and detailed weather analysis.",
-  keywords: ["weather", "norway", "AI", "forecast", "norwegian", "yr"],
-  authors: [{ name: "Væro Team" }],
+  title: "Weather Forecast Dashboard",
+  description: "Beautiful weather dashboard with real-time forecasts and modern design.",
+  keywords: ["weather", "forecast", "dashboard", "nextjs", "modern design"],
+  authors: [{ name: "Weather Dashboard Team" }],
   openGraph: {
-    title: "Væro - Norwegian Weather Intelligence",
-    description: "AI-powered weather forecasting with personalized insights for Norway",
+    title: "Weather Forecast Dashboard",
+    description: "Beautiful weather dashboard with real-time forecasts and modern design.",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Væro - Norwegian Weather Intelligence",
-    description: "AI-powered weather forecasting with personalized insights for Norway",
+    title: "Weather Forecast Dashboard",
+    description: "Beautiful weather dashboard with real-time forecasts and modern design.",
   },
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#5B46BF",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#4A90E2",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
       <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-        <body className="antialiased">
-          <Providers>
-            {children}
-          </Providers>
+        <body className="antialiased h-screen w-screen overflow-hidden">
+          {/* 3D Clouds Background Layer */}
+          <div className="fixed inset-0 z-0">
+            <ThreeClouds />
+          </div>
+          
+          {/* Main Content Layer */}
+          <div className="relative z-10 h-full w-full">
+            <Providers>{children}</Providers>
+          </div>
         </body>
       </html>
     </ClerkProvider>
