@@ -1,3 +1,7 @@
+// Description: Gives a notification badge that appears at the bottom of the screen
+// when there is an issue, with a close button to dismiss it.
+
+
 import React, { useState } from 'react';
 
 export const NotificationBadge = () => {

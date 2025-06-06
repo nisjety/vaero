@@ -1,11 +1,63 @@
-import React from 'react';
+// Description: A React component that shows the users favorite Norwegian cities,
+//  colored line based on hot/cold/neutral temperature readings,
+//  with text indicating which city temperatures.
+
+import React, { useState, useEffect } from 'react';
+import { api } from '../../lib/api';
+
+interface CityData {
+  name: string;
+  lat: number;
+  lon: number;
+  temp?: number;
+  isActive: boolean;
+  loading: boolean;
+  error?: string;
+}
 
 export const CityTemperatures = () => {
-  const cities = [
-    { name: "Washington D.C", temp: 12, isActive: false },
-    { name: "Oklahoma City", temp: 17, isActive: true },
-    { name: "Philadelphia", temp: 14, isActive: false },
-  ];
+  const [cities, setCities] = useState<CityData[]>([
+    { name: "Oslo", lat: 59.9139, lon: 10.7522, isActive: true, loading: true },
+    { name: "Bergen", lat: 60.3913, lon: 5.3221, isActive: false, loading: true },
+    { name: "Trondheim", lat: 63.4305, lon: 10.3951, isActive: false, loading: true },
+  ]);
+
+  useEffect(() => {
+    const fetchCityWeather = async (city: CityData, index: number) => {
+      try {
+        const response = await api.get(`/weather/current?lat=${city.lat}&lon=${city.lon}`);
+        const weatherData = response.data;
+        
+        setCities(prev => prev.map((c, i) => 
+          i === index 
+            ? { 
+                ...c, 
+                temp: Math.round(weatherData.current.temperature),
+                loading: false,
+                error: undefined 
+              }
+            : c
+        ));
+      } catch (error) {
+        console.error(`Error fetching weather for ${city.name}:`, error);
+        setCities(prev => prev.map((c, i) => 
+          i === index 
+            ? { 
+                ...c, 
+                loading: false,
+                error: 'Feil ved lasting av værdata' 
+              }
+            : c
+        ));
+      }
+    };
+
+    cities.forEach((city, index) => {
+      if (city.loading && !city.temp) {
+        fetchCityWeather(city, index);
+      }
+    });
+  }, []);
 
   return (
     <>
@@ -123,10 +175,16 @@ export const CityTemperatures = () => {
       `}</style>
       
       <div className="city-temperatures-container">
-        {cities.map((city) => (
+        {cities.map((city, _index) => (
           <div key={city.name} className="city-item">
             <div className="city-temp">
-              {city.temp}°
+              {city.loading ? (
+                <span style={{ opacity: 0.5 }}>--</span>
+              ) : city.error ? (
+                <span style={{ opacity: 0.5, fontSize: '1rem' }}>!</span>
+              ) : (
+                `${city.temp}°`
+              )}
             </div>
             <div className="city-name">
               {city.name}

@@ -1,4 +1,10 @@
 // src/components/layout/location-selector.tsx
+
+// a component for selecting a location
+// with options for current location and manual search
+// it uses the Nominatim API for searching locations in Norway and nearby countries
+// it also handles geolocation to get the user's current position
+
 "use client";
 
 import { useState, useEffect } from "react";

@@ -14,6 +14,8 @@ export interface CurrentWeather {
   wind_speed: number;
   precipitation_probability: number;
   visibility?: number;
+  uv_index?: number;
+  humidity?: number;
 }
 
 export interface HourlyWeather {
@@ -79,8 +81,8 @@ export interface UserPrefs {
   defaultLat?: number;
   defaultLon?: number;
   stylePreferences?: {
-    gender: string;
-    style: string;
+    gender?: string;
+    style?: string;
     owns?: string[];
   };
   notifTempBelow?: number;

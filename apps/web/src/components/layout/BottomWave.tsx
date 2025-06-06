@@ -1,3 +1,9 @@
+// Description: A React component that renders a smooth, 
+// animated wave based on hourly temperature readings, 
+// with labels indicating high and low temperatures and time of the day. 
+// The wave height adjusts dynamically based on the current temperature, 
+// creating a visually appealing and informative display.
+
 import React, { useState, useEffect } from 'react';
 
 export const BottomWave = ({ currentTemp = 27 }: { currentTemp?: number }) => {
@@ -17,7 +23,7 @@ export const BottomWave = ({ currentTemp = 27 }: { currentTemp?: number }) => {
   // Calculate wave height based on temperature difference from current temp
   const getWaveHeight = (temp: number): number => {
     const baseline = 60; // Center line moved to accommodate new height
-    const maxVariation = 25; // More variation for waviness
+    const _maxVariation = 25; // More variation for waviness
     const tempDiff = temp - currentTemp;
     // Scale: each degree difference = 2 pixels for more dramatic waves
     const heightOffset = (tempDiff * 2);

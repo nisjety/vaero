@@ -1,22 +1,32 @@
-import React from 'react';
-import { Thermometer, Cloud, Sun, Snowflake, CloudRain, Wind, CloudSnow } from 'lucide-react';
+// Description: A React component that shows a metrics panel with location-based temperature readings
+// from different Norwegian cities, each with an icon representing the weather condition.
+// The indicator color changes based on the temperature reading.
+// It should be responsive and visually appealing, with a focus on user interaction and accessibility.
+// It includes a header with a percentage and indicators.
+// and a scrollable list of metric cards for each city.
+// On hover, the card tells the user more info about the condition in that city.
+
+import React, { useState, useEffect } from 'react';
+import { Thermometer, Cloud, Sun, Snowflake, CloudRain } from 'lucide-react';
+import { api } from '../../lib/api';
 
 interface MetricCardProps {
   location: string;
-  state: string;
+  region: string;
   value: string;
   unit?: string;
   icon?: React.ReactNode;
   className?: string;
+  symbolCode?: string;
 }
 
-const MetricCard = ({ location, state, value, unit = "°", icon, className = "" }: MetricCardProps) => {
+const MetricCard = ({ location, region, value, unit = "°", icon, className = "", symbolCode: _symbolCode }: MetricCardProps) => {
   return (
     <div className={`metric-card ${className}`}>
       <div className="metric-card-content">
         <div className="metric-card-location">
           <div className="metric-card-city">{location}</div>
-          <div className="metric-card-state">({state})</div>
+          <div className="metric-card-state">({region})</div>
         </div>
         <div className="metric-card-right">
           <div className="metric-card-value">
@@ -34,19 +44,83 @@ const MetricCard = ({ location, state, value, unit = "°", icon, className = "" 
   );
 };
 
+interface CityData {
+  location: string;
+  region: string;
+  lat: number;
+  lon: number;
+  temp?: number;
+  symbolCode?: string;
+  loading: boolean;
+  error?: string;
+}
+
 export const MetricsPanel = () => {
-  const cities = [
-    { location: "Pennsylvania", state: "PA", value: "18", icon: <Cloud className="w-4 h-4" /> },
-    { location: "Massachusetts", state: "MA", value: "24", icon: <Sun className="w-4 h-4" /> },
-    { location: "New York", state: "NY", value: "27", icon: <Sun className="w-4 h-4" /> },
-    { location: "North Carolina", state: "NC", value: "-2", icon: <Snowflake className="w-4 h-4" /> },
-    { location: "California", state: "CA", value: "32", icon: <Sun className="w-4 h-4" /> },
-    { location: "Florida", state: "FL", value: "29", icon: <CloudRain className="w-4 h-4" /> },
-    { location: "Texas", state: "TX", value: "35", icon: <Sun className="w-4 h-4" /> },
-    { location: "Washington", state: "WA", value: "12", icon: <CloudSnow className="w-4 h-4" /> },
-    { location: "Colorado", state: "CO", value: "8", icon: <Snowflake className="w-4 h-4" /> },
-    { location: "Illinois", state: "IL", value: "15", icon: <Wind className="w-4 h-4" /> },
-  ];
+  const [cities, setCities] = useState<CityData[]>([
+    { location: "Oslo", region: "Østlandet", lat: 59.9139, lon: 10.7522, loading: true },
+    { location: "Bergen", region: "Vestlandet", lat: 60.3913, lon: 5.3221, loading: true },
+    { location: "Trondheim", region: "Trøndelag", lat: 63.4305, lon: 10.3951, loading: true },
+    { location: "Stavanger", region: "Vestlandet", lat: 58.9700, lon: 5.7331, loading: true },
+    { location: "Kristiansand", region: "Sørlandet", lat: 58.1467, lon: 7.9956, loading: true },
+    { location: "Fredrikstad", region: "Østlandet", lat: 59.2181, lon: 10.9298, loading: true },
+    { location: "Drammen", region: "Østlandet", lat: 59.7439, lon: 10.2045, loading: true },
+    { location: "Skien", region: "Østlandet", lat: 59.2086, lon: 9.6091, loading: true },
+    { location: "Kristiansund", region: "Møre og Romsdal", lat: 63.1109, lon: 7.7289, loading: true },
+    { location: "Ålesund", region: "Møre og Romsdal", lat: 62.4722, lon: 6.1494, loading: true },
+  ]);
+
+  useEffect(() => {
+    const fetchCityWeather = async (city: CityData, index: number) => {
+      try {
+        const response = await api.get(`/weather/current?lat=${city.lat}&lon=${city.lon}`);
+        const weatherData = response.data;
+        
+        setCities(prev => prev.map((c, i) => 
+          i === index 
+            ? { 
+                ...c, 
+                temp: Math.round(weatherData.temperature),
+                symbolCode: weatherData.symbol_code,
+                loading: false,
+                error: undefined 
+              }
+            : c
+        ));
+      } catch (error) {
+        console.error(`Error fetching weather for ${city.location}:`, error);
+        setCities(prev => prev.map((c, i) => 
+          i === index 
+            ? { 
+                ...c, 
+                loading: false,
+                error: 'Feil' 
+              }
+            : c
+        ));
+      }
+    };
+
+    cities.forEach((city, index) => {
+      if (city.loading && city.temp === undefined) {
+        fetchCityWeather(city, index);
+      }
+    });
+  }, []);
+
+  // Get icon component based on symbol code
+  const getIconComponent = (symbolCode?: string) => {
+    if (!symbolCode) return <Thermometer className="w-4 h-4" />;
+    
+    if (symbolCode.includes('snow')) return <Snowflake className="w-4 h-4" />;
+    if (symbolCode.includes('rain')) return <CloudRain className="w-4 h-4" />;
+    if (symbolCode.includes('cloud')) return <Cloud className="w-4 h-4" />;
+    if (symbolCode.includes('clear') || symbolCode.includes('fair')) return <Sun className="w-4 h-4" />;
+    return <Thermometer className="w-4 h-4" />;
+  };
+
+  // Calculate average temperature
+  const validTemps = cities.filter(city => city.temp !== undefined && !city.error).map(city => city.temp!);
+  const avgTemp = validTemps.length > 0 ? Math.round(validTemps.reduce((a, b) => a + b, 0) / validTemps.length) : 0;
 
   return (
     <>
@@ -298,7 +372,7 @@ export const MetricsPanel = () => {
         <div className="metrics-header">
           <div className="metrics-header-left">
             <Thermometer className="metrics-header-icon" />
-            <div className="metrics-header-value">9.8%</div>
+            <div className="metrics-header-value">{avgTemp}°</div>
           </div>
           <div className="metrics-header-indicators">
             <div className="metrics-indicator indicator-purple"></div>
@@ -314,9 +388,10 @@ export const MetricsPanel = () => {
               <MetricCard 
                 key={index}
                 location={city.location} 
-                state={city.state}
-                value={city.value} 
-                icon={city.icon}
+                region={city.region}
+                value={city.loading ? "--" : city.error ? "!" : city.temp?.toString() || "--"} 
+                icon={getIconComponent(city.symbolCode)}
+                symbolCode={city.symbolCode}
               />
             ))}
           </div>

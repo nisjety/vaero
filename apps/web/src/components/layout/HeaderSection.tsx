@@ -1,3 +1,12 @@
+// Description: A React component that displays a header section with a logo, navigation links,
+// current time, date, and user actions. The header is styled with CSS for a modern look and responsive design.
+//
+// The component also includes a day/night toggle button that changes its appearance based on the time of day, 
+// it checks if the when the sun rises based on the sity and changes based on that data.
+// The time is displayed in a large font, with the current date and day of the week below it.
+// The header includes action buttons for refreshing, viewing clock, adding items, settings, user profile, grid view, and more options.
+// 
+
 import React from 'react';
 import { RefreshCw, Clock, Plus, Settings, User, Grid3X3, MoreHorizontal, Sun, Moon } from "lucide-react";
 

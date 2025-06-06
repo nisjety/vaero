@@ -3,8 +3,6 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { BookOpen, Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 interface DailySummaryProps {
   summary?: string;
@@ -15,8 +13,7 @@ export function DailySummary({
   summary,
   isLoading = false,
 }: DailySummaryProps) {
-  const { isLoaded, isSignedIn } = useAuth();
-  const router = useRouter();
+  const { isSignedIn } = useAuth();
 
   // Auth is now handled at the page level
   if (!isSignedIn) return null;

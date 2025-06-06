@@ -17,7 +17,7 @@ export class Detector {
     try {
       const canvas = document.createElement('canvas');
       return !!(window.WebGLRenderingContext && canvas.getContext('webgl'));
-    } catch (e) {
+    } catch {
       return false;
     }
   }

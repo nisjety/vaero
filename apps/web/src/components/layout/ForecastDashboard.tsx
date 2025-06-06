@@ -1,14 +1,68 @@
+// Description: A React Component that displays a forecast dashboard with a circular chart, 
+// temperature information, a slider, and friends' avatars to illustrate the friend's weather data.
+// The circular chart shows the current Pollenvarsel and luftforurensning,
+// while the slider shows users Lite eller ingen risiko for helseeffekter.
+// The temperature section displays the current UV-varsel and its status.
+// The friends' avatars are displayed in a row, indicating the number of friends currently in the weather city.
+// The component is styled with CSS for a modern look and responsive design.
+
 import React, { useState } from 'react';
+import { useCurrentWeather } from '../../hooks/api';
 
 export const ForecastDashboard = () => {
   const [sliderValue, setSliderValue] = useState(65);
   
+  // Get current weather data - using Oslo as default
+  const { data: weather, isLoading, error } = useCurrentWeather(59.9139, 10.7522);
+  
   const friends = [
-    { id: 1, avatar: "👨‍💼", name: "John" },
-    { id: 2, avatar: "👩‍💻", name: "Sarah" },
-    { id: 3, avatar: "👨‍🎨", name: "Mike" },
-    { id: 4, avatar: "👩‍🔬", name: "Lisa" }
+    { id: 1, avatar: "👨‍💼", name: "Erik" },
+    { id: 2, avatar: "👩‍💻", name: "Astrid" },
+    { id: 3, avatar: "👨‍🎨", name: "Magnus" },
+    { id: 4, avatar: "👩‍🔬", name: "Ingrid" }
   ];
+
+  // Calculate air quality and pollen levels (simulated for now)
+  const getAirQualityLevel = () => {
+    if (!weather) return { level: 2, text: "Moderat" };
+    
+    // Simple simulation based on temperature and wind
+    const temp = weather.temperature;
+    const wind = weather.wind_speed;
+    
+    if (temp > 20 && wind < 3) return { level: 3, text: "Dårlig" };
+    if (temp > 10 && wind < 5) return { level: 2, text: "Moderat" };
+    return { level: 1, text: "God" };
+  };
+
+  // Calculate UV risk level
+  const getUVRisk = () => {
+    if (!weather) return { risk: 2, description: "Moderat risiko" };
+    
+    // Simple UV simulation based on time and temperature
+    const temp = weather.temperature;
+    const hour = new Date().getHours();
+    
+    if (temp > 15 && hour >= 11 && hour <= 15) return { risk: 3, description: "Høy risiko" };
+    if (temp > 5 && hour >= 10 && hour <= 16) return { risk: 2, description: "Moderat risiko" };
+    return { risk: 1, description: "Lav risiko" };
+  };
+
+  const airQuality = getAirQualityLevel();
+  const uvRisk = getUVRisk();
+
+  // Calculate risk percentage for slider
+  const getRiskPercentage = () => {
+    const baseRisk = uvRisk.risk * 20; // 1-3 * 20 = 20-60
+    const tempFactor = weather ? Math.max(0, (weather.temperature - 5) * 2) : 0;
+    return Math.min(90, Math.max(10, baseRisk + tempFactor));
+  };
+
+  React.useEffect(() => {
+    if (weather) {
+      setSliderValue(getRiskPercentage());
+    }
+  }, [weather]);
 
   return (
     <>
@@ -273,7 +327,7 @@ export const ForecastDashboard = () => {
         <div className="chart-container">
           <div className="chart-circle">
             <div className="chart-inner">
-              -6°
+              {isLoading ? "--" : error ? "!" : `${Math.round(weather?.temperature || 0)}°`}
             </div>
           </div>
           <div className="chart-plus">+</div>
@@ -283,10 +337,12 @@ export const ForecastDashboard = () => {
         <div className="forecast-info">
           {/* Temperature Section */}
           <div className="temp-section">
-            <div className="temp-value">-3°</div>
+            <div className="temp-value">
+              {isLoading ? "--°" : error ? "Feil" : `${Math.round(weather?.temperature || 0)}°`}
+            </div>
             <div className="temp-status">
-              <span className="temp-label">Normal</span>
-              <span className="temp-percentage">30-90%</span>
+              <span className="temp-label">{uvRisk.description}</span>
+              <span className="temp-percentage">{airQuality.text} luftkvalitet</span>
             </div>
           </div>
 
@@ -306,7 +362,7 @@ export const ForecastDashboard = () => {
                 </div>
               ))}
             </div>
-            <span className="friends-text">+ Friends in WD</span>
+            <span className="friends-text">+ Venner i Oslo</span>
           </div>
         </div>
       </div>

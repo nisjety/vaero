@@ -6,19 +6,20 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Save, MapPin, Thermometer, Clock, Palette, Bell } from 'lucide-react';
-import { Header } from '@/components/layout/header';
+import { HeaderSection } from '@/components/layout/HeaderSection';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { useUserPrefs, useUpdateUserPrefs } from '@/hooks/api';
 
 const userPrefsSchema = z.object({
-  unit: z.enum(['metric', 'imperial']).default('metric'),
-  timeFormat: z.enum(['24h', '12h']).default('24h'),
+  unit: z.enum(['metric', 'imperial']),
+  timeFormat: z.enum(['24h', '12h']),
   defaultLat: z.number().optional(),
   defaultLon: z.number().optional(),
   stylePreferences: z.object({
     gender: z.string().optional(),
     style: z.string().optional(),
+    owns: z.array(z.string()).optional(),
   }).optional(),
   notifTempBelow: z.number().optional(),
   notifTempAbove: z.number().optional(),
@@ -29,6 +30,7 @@ type UserPrefsFormData = z.infer<typeof userPrefsSchema>;
 
 export default function SettingsPage() {
   const router = useRouter();
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
 
@@ -39,7 +41,6 @@ export default function SettingsPage() {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isDirty, isValid }
   } = useForm<UserPrefsFormData>({
     resolver: zodResolver(userPrefsSchema),
@@ -67,6 +68,12 @@ export default function SettingsPage() {
     }
   }, [userPrefs, setValue]);
 
+  // Update current time every second
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const onSubmit = async (data: UserPrefsFormData) => {
     try {
       await updatePrefsMutation.mutateAsync(data);
@@ -92,7 +99,7 @@ export default function SettingsPage() {
         setValue('defaultLon', position.coords.longitude);
         setIsLocationLoading(false);
       },
-      (error) => {
+      (_error) => {
         setLocationError('Failed to get your location. Please check your browser settings.');
         setIsLocationLoading(false);
       },
@@ -115,7 +122,7 @@ export default function SettingsPage() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fjord-blue-400 via-fjord-blue-500 to-arctic-blue-600">
-        <Header />
+        <HeaderSection currentTime={currentTime} />
         
         <main className="container mx-auto px-4 py-6 max-w-2xl">
           {/* Header */}

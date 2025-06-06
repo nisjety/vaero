@@ -21,7 +21,7 @@ export default function ThreeClouds() {
   useEffect(() => {
     // Kjører kun i nettleser (SSR-sjekk)
     if (typeof window === 'undefined') return;
-    const container = containerRef.current!;
+    const _container = containerRef.current!;
     const canvas = canvasRef.current!;
 
     // --- 1) Opprett WebGLRenderer som binder seg mot vårt <canvas> ---

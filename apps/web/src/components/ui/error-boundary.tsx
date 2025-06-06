@@ -36,7 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
             <h2 className="text-2xl font-light mb-2">Something went wrong</h2>
             <p className="text-white/70 mb-4">
-              We're sorry, but there was an error loading the weather dashboard.
+              We&apos;re sorry, but there was an error loading the weather dashboard.
             </p>
             <button
               onClick={() => this.setState({ hasError: false })}
