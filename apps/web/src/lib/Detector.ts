@@ -8,7 +8,7 @@
 export class Detector {
   /** Sjekker om nettleseren støtter CanvasRenderingContext2D */
   public static canvas(): boolean {
-    return typeof window !== 'undefined' && !!(window as any).CanvasRenderingContext2D;
+    return typeof window !== 'undefined' && !!(window as Window & { CanvasRenderingContext2D?: unknown }).CanvasRenderingContext2D;
   }
 
   /** Sjekker om nettleseren støtter WebGL */

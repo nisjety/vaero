@@ -1,9 +1,5 @@
-// Description: The main temperature display component that shows the current temperature
-// from real weather data. Displays Norwegian weather information including temperature,
-// wind speed, UV index, and location. Features responsive design and proper API integration
-// with the backend weather service using YR (Norwegian Meteorological Institute) data.
 
-// Description: The main temperature display component that shows the current temperature
+ // Description: The main temperature display component that shows the current temperature
 // from real weather data. Displays Norwegian weather information including temperature,
 // wind speed, UV index, and location. Features responsive design and proper API integration
 // with the backend weather service using YR (Norwegian Meteorological Institute) data.
@@ -11,8 +7,12 @@
 'use client';
 
 import React from 'react';
-import { useCurrentWeather } from '@/hooks/api';
-import { formatTemperature, formatWindSpeed } from '@/lib/weather-symbols';
+import { useDetailedWeather } from '@/hooks/api';
+import { 
+  formatWindInfo, 
+  formatUVIndex
+} from '@/lib/weather-symbols';
+import { formatTemperature } from '@/lib/utils';
 
 interface MainTemperatureDisplayProps {
   lat?: number;
@@ -25,7 +25,13 @@ export const MainTemperatureDisplay: React.FC<MainTemperatureDisplayProps> = ({
   lon = 10.7522,
   locationName = 'Oslo, Norge'
 }) => {
-  const { data: weather, isLoading, error } = useCurrentWeather(lat, lon);
+  // Use detailed weather for comprehensive data
+  const { data: detailedWeather, isLoading: detailedLoading, error: detailedError } = useDetailedWeather(lat, lon);
+  
+  // Use detailed weather data - access current weather from the weather property
+  const weather = detailedWeather?.weather?.current;
+  const isLoading = detailedLoading;
+  const error = detailedError;
 
   if (isLoading) {
     return (
@@ -203,11 +209,10 @@ export const MainTemperatureDisplay: React.FC<MainTemperatureDisplayProps> = ({
     );
   }
 
-  const temperature = formatTemperature(weather.temperature);
-  const windInfo = formatWindSpeed(weather.wind_speed);
-  const uvInfo = weather.uv_index !== undefined ? 
-    `UV-INDEKS: ${Math.round(weather.uv_index)} AV 10` : 
-    'UV-INDEKS: Ikke tilgjengelig';
+  const temperature = formatTemperature(weather?.temperature ?? 0);
+  const windInfo = formatWindInfo(weather?.wind_speed ?? 0, weather?.wind_direction ?? 0);
+  const uvInfo = formatUVIndex(weather?.uv_index ?? 0);
+  const isHighUV = weather?.uv_index && weather.uv_index > 5;
 
   return (
     <>
@@ -248,26 +253,53 @@ export const MainTemperatureDisplay: React.FC<MainTemperatureDisplayProps> = ({
           }
         }
 
+        .main-temp-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 0.5rem;
+        }
+
         .main-temp-wind {
           font-size: 0.875rem;
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          margin-top: 0.5rem;
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(255, 255, 255, 0.9);
+          background: rgba(255, 255, 255, 0.1);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          display: inline-block;
         }
 
         .main-temp-uv {
           font-size: 0.75rem;
-          margin-top: 0.25rem;
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(255, 255, 255, 0.8);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+        }
+        
+        .main-temp-uv-high {
+          color: #f87171;
+          font-weight: 500;
+          background: rgba(248, 113, 113, 0.1);
         }
 
         .main-temp-location {
           font-size: 0.75rem;
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          margin-top: 0.25rem;
-          color: rgba(255, 255, 255, 0.5);
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .main-temp-ai-insight {
+          font-size: 0.75rem;
+          color: rgba(255, 255, 255, 0.8);
+          background: rgba(255, 255, 255, 0.1);
+          padding: 0.5rem;
+          border-radius: 0.375rem;
+          margin-top: 0.5rem;
+          border-left: 3px solid rgba(59, 130, 246, 0.6);
+          line-height: 1.4;
         }
 
         @media (max-width: 768px) {
@@ -294,14 +326,19 @@ export const MainTemperatureDisplay: React.FC<MainTemperatureDisplayProps> = ({
             {temperature}
           </div>
         </div>
-        <div className="main-temp-wind">
-          {windInfo}
-        </div>
-        <div className="main-temp-uv">
-          {uvInfo}
-        </div>
-        <div className="main-temp-location">
-          {locationName}
+        
+        <div className="main-temp-info">
+          <div className="main-temp-wind">
+            {windInfo}
+          </div>
+          {weather?.uv_index && (
+            <div className={`main-temp-uv ${isHighUV ? 'main-temp-uv-high' : ''}`}>
+              {uvInfo}
+            </div>
+          )}
+          <div className="main-temp-location">
+            {locationName}
+          </div>
         </div>
       </div>
     </>

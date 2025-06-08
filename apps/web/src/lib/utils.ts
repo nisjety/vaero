@@ -14,13 +14,13 @@ interface TemperatureOptions {
 }
 
 export const formatTemperature = (
-  value: number,
+  value: number | undefined,
   unit: 'metric' | 'imperial' = 'metric',
   options: TemperatureOptions = {}
 ): string => {
   const { showUnit = true } = options;
   
-  if (typeof value !== 'number' || isNaN(value)) {
+  if (value === undefined || typeof value !== 'number' || isNaN(value)) {
     return '--';
   }
   
@@ -101,7 +101,10 @@ export const formatWindSpeed = (
 };
 
 // Precipitation probability formatting
-export const formatPrecipitation = (probability: number): string => {
+export const formatPrecipitation = (probability: number | undefined): string => {
+  if (probability === undefined || typeof probability !== 'number' || isNaN(probability)) {
+    return '--%';
+  }
   return `${Math.round(probability)}%`;
 };
 

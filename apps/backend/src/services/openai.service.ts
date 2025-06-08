@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import { env } from '../utils/env';
 import { logger } from '../utils/logger';
 import { prisma } from '../utils/database';
-import { yrService, type WeatherData } from './yr.service';
+import { YrService, yrService, type WeatherData } from './yr.service';
 
 const openai = new OpenAI({
   apiKey: env.OPENAI_API_KEY,
@@ -55,7 +55,7 @@ export const generateClothingSuggestion = async (
 
     const prompt = `You are a clothing recommendation engine for Norwegian weather.
 User style preferences: ${JSON.stringify(stylePrefs)}.
-Current weather: ${current.temperature}°C, condition: ${current.symbol_code}, wind: ${current.wind_speed} m/s, precipitation probability: ${current.precipitation_probability}%.
+Current weather: ${current.temperature}°C, condition: ${current.symbol_code}, wind: ${current.wind_speed} m/s, precipitation probability: ${current.precip_prob ?? 0}%.
 Location: Norway (consider Nordic climate).
 
 Suggest practical clothing for this weather. Return JSON format:
@@ -190,7 +190,7 @@ export const generateActivitySuggestion = async (
     
     // Find weather for the specific date
     const targetDate = new Date(date);
-    const dailyForecast = weather.daily.find(day => {
+    const dailyForecast = weather.daily.find((day: { date: string }) => {
       const forecastDate = new Date(day.date);
       return forecastDate.toDateString() === targetDate.toDateString();
     });
@@ -276,7 +276,7 @@ export const generatePackingList = async (
     const start = new Date(startDate);
     const end = new Date(endDate);
     
-    const relevantDays = weather.daily.filter(day => {
+    const relevantDays = weather.daily.filter((day: { date: string }) => {
       const dayDate = new Date(day.date);
       return dayDate >= start && dayDate <= end;
     });
@@ -286,7 +286,7 @@ export const generatePackingList = async (
     }
 
     // Create weather summary for the period
-    const weatherSummary = relevantDays.map(day => 
+    const weatherSummary = relevantDays.map((day: { date: string; maxTemp: number; minTemp: number; symbol_code: string }) => 
       `- ${day.date}: High ${day.maxTemp}°C, Low ${day.minTemp}°C, ${day.symbol_code}`
     ).join('\n');
 

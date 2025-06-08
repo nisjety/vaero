@@ -1,17 +1,32 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from './logger';
 
+// Define the PrismaClient with proper log configuration
+type LogLevel = 'info' | 'query' | 'warn' | 'error';
+type LogDefinition = {
+  level: LogLevel;
+  emit: 'stdout' | 'event';
+};
+
+const logDefinitions: LogDefinition[] = [
+  { emit: 'event', level: 'query' },
+  { emit: 'event', level: 'error' },
+  { emit: 'event', level: 'warn' },
+];
+
 class DatabaseClient {
-  private prisma: PrismaClient;
+  private prisma: PrismaClient<
+    Prisma.PrismaClientOptions,
+    'query' | 'error' | 'warn'
+  >;
 
   constructor() {
     this.prisma = new PrismaClient({
-      log: [
-        { emit: 'event', level: 'query' },
-        { emit: 'event', level: 'error' },
-        { emit: 'event', level: 'warn' },
-      ],
-    });
+      log: logDefinitions,
+    }) as PrismaClient<
+      Prisma.PrismaClientOptions,
+      'query' | 'error' | 'warn'
+    >;
 
     // Log queries in development
     if (process.env.NODE_ENV === 'development') {

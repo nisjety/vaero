@@ -2,7 +2,7 @@ import { Job, Queue, Worker } from 'bullmq';
 import { redisConnection, redis } from '../utils/redis';
 import { logger } from '../utils/logger';
 import { prisma } from '../utils/database';
-import { yrService } from '../services/yr.service';
+import { YrService, yrService } from '../services/yr.service';
 import notificationService from '../services/notification.service';
 
 export interface NotificationJobData {
@@ -72,13 +72,13 @@ export class NotificationJob {
       // Get current weather
       const weather = await yrService.getWeather(prefs.defaultLat, prefs.defaultLon);
       const currentTemp = weather.current.temperature;
-      const rainProb = weather.current.precipitation_probability;
+      const rainProb = weather.current.precip_prob ?? 0;
 
       // Check temperature alerts
       await this.checkTemperatureAlerts(user, currentTemp, weatherSnapshot?.currentTemp);
       
       // Check rain probability alerts
-      await this.checkRainAlerts(user, rainProb, weatherSnapshot?.rawData?.precipitation_probability);
+      await this.checkRainAlerts(user, rainProb, weatherSnapshot?.rawData?.precipitation_probability || 0);
 
       // Update weather snapshot
       await this.updateWeatherSnapshot(user.id, weather, prefs.defaultLat, prefs.defaultLon);

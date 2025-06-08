@@ -9,6 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { Thermometer, Cloud, Sun, Snowflake, CloudRain } from 'lucide-react';
 import { api } from '../../lib/api';
+// Removed AI-related hooks since we're using free tier endpoints
 
 interface MetricCardProps {
   location: string;
@@ -33,11 +34,13 @@ const MetricCard = ({ location, region, value, unit = "°", icon, className = ""
             {value}
             <span className="metric-card-unit">{unit}</span>
           </div>
-          {icon && (
-            <div className="metric-card-icon">
-              {icon}
-            </div>
-          )}
+          <div className="metric-card-icons">
+            {icon && (
+              <div className="metric-card-icon">
+                {icon}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -56,6 +59,7 @@ interface CityData {
 }
 
 export const MetricsPanel = () => {
+  
   const [cities, setCities] = useState<CityData[]>([
     { location: "Oslo", region: "Østlandet", lat: 59.9139, lon: 10.7522, loading: true },
     { location: "Bergen", region: "Vestlandet", lat: 60.3913, lon: 5.3221, loading: true },
@@ -72,6 +76,7 @@ export const MetricsPanel = () => {
   useEffect(() => {
     const fetchCityWeather = async (city: CityData, index: number) => {
       try {
+        // Use free tier current weather endpoint
         const response = await api.get(`/weather/current?lat=${city.lat}&lon=${city.lon}`);
         const weatherData = response.data;
         
@@ -79,10 +84,10 @@ export const MetricsPanel = () => {
           i === index 
             ? { 
                 ...c, 
-                temp: Math.round(weatherData.temperature),
-                symbolCode: weatherData.symbol_code,
+                temp: Math.round(weatherData.current.temperature),
+                symbolCode: weatherData.current.symbol_code,
                 loading: false,
-                error: undefined 
+                error: undefined
               }
             : c
         ));
@@ -105,7 +110,7 @@ export const MetricsPanel = () => {
         fetchCityWeather(city, index);
       }
     });
-  }, []);
+  }, [cities]); // Add proper dependency
 
   // Get icon component based on symbol code
   const getIconComponent = (symbolCode?: string) => {
@@ -263,6 +268,12 @@ export const MetricsPanel = () => {
           gap: 10px;
         }
 
+        .metric-card-icons {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
         .metric-card-value {
           color: white;
           font-size: 18px;
@@ -289,9 +300,78 @@ export const MetricsPanel = () => {
           flex-shrink: 0;
         }
 
+        .metric-card-ai-indicator {
+          width: 20px;
+          height: 20px;
+          background: rgba(59, 130, 246, 0.2);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          flex-shrink: 0;
+        }
+
+        .metric-card-ai-insight {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          margin-top: 4px;
+          padding: 2px 6px;
+          background: rgba(59, 130, 246, 0.1);
+          border-radius: 8px;
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          max-width: 100%;
+          overflow: hidden;
+        }
+
+        .metric-card-ai-insight span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-size: 10px;
+        }
+
         .metric-card:hover .metric-card-icon {
           background: rgba(255, 255, 255, 0.15);
           color: rgba(255, 255, 255, 0.9);
+        }
+
+        .metric-card:hover .metric-card-ai-indicator {
+          background: rgba(59, 130, 246, 0.3);
+        }
+
+        .metrics-header-ai-status {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          margin-left: 8px;
+        }
+
+        .ai-status-indicator {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          transition: all 0.3s ease;
+        }
+
+        .ai-status-active {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .ai-status-loading {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          animation: pulse 2s infinite;
+        }
+
+        .ai-status-inactive {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
 
         /* Smooth scroll animation */

@@ -31,7 +31,11 @@ export function LocationSelector({
     useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Array<{
+    name: string;
+    lat: number;
+    lon: number;
+  }>>([]);
   const [localCurrentLocation, setLocalCurrentLocation] =
     useState(defaultLocation);
 
@@ -88,7 +92,11 @@ export function LocationSelector({
       const results = await response.json();
 
       setSearchResults(
-        results.map((result: any) => ({
+        results.map((result: {
+          display_name: string;
+          lat: string;
+          lon: string;
+        }) => ({
           name: result.display_name,
           lat: parseFloat(result.lat),
           lon: parseFloat(result.lon),

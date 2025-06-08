@@ -11,7 +11,6 @@ import { MainTemperatureDisplay } from "../components/layout/MainTemperatureDisp
 import { MetricsPanel } from "../components/layout/MetricsPanel";
 import { ForecastDashboard } from "../components/layout/ForecastDashboard";
 import { BottomWave } from "../components/layout/BottomWave";
-import { NotificationBadge } from "../components/layout/NotificationBadge";
 
 const CloudIllustration = () => (
   <div className="flex items-center justify-center h-full">
@@ -78,15 +77,10 @@ export default function Home() {
         </div>
 
         {/* Bottom Section - Forecast Dashboard */}
-        <div className="absolute bottom-45 left-22 z-20">
-          <div className="w-96">
+        <div className="absolute bottom-35 left-22 z-20">
+          <div className="w-full">
             <ForecastDashboard />
           </div>
-        </div>
-
-        {/* Fixed Elements */}
-        <div className="absolute top-20 right-8 z-30">
-          <NotificationBadge />
         </div>
 
         {/* Bottom Wave */}

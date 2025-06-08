@@ -26,13 +26,13 @@ export const CityTemperatures = () => {
     const fetchCityWeather = async (city: CityData, index: number) => {
       try {
         const response = await api.get(`/weather/current?lat=${city.lat}&lon=${city.lon}`);
-        const weatherData = response.data;
+        const weatherData = response.data.current;
         
         setCities(prev => prev.map((c, i) => 
           i === index 
             ? { 
                 ...c, 
-                temp: Math.round(weatherData.current.temperature),
+                temp: Math.round(weatherData.temperature),
                 loading: false,
                 error: undefined 
               }
@@ -57,7 +57,7 @@ export const CityTemperatures = () => {
         fetchCityWeather(city, index);
       }
     });
-  }, []);
+  }, [cities]);
 
   return (
     <>

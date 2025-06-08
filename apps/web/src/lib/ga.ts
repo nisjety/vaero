@@ -4,6 +4,17 @@
  * Bytt ut GA-ID med din egen om nødvendig.
  */
 
+// Declare global gtag function type
+declare global {
+  interface Window {
+    gtag?: (
+      command: 'config' | 'event' | 'js' | 'get',
+      targetId: string,
+      config?: Record<string, unknown>
+    ) => void;
+  }
+}
+
 export const GA_TRACKING_ID = 'G-VV3WNJLYL9'; // Skriv din egen ID her
 
 /**
@@ -11,8 +22,8 @@ export const GA_TRACKING_ID = 'G-VV3WNJLYL9'; // Skriv din egen ID her
  * @param url Stien for siden (f.eks. window.location.pathname)
  */
 export const pageview = (url: string): void => {
-  if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
-    (window as any).gtag('config', GA_TRACKING_ID, {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+    window.gtag('config', GA_TRACKING_ID, {
       page_path: url,
     });
   }
@@ -36,8 +47,8 @@ export const event = ({
   label: string;
   value: number;
 }): void => {
-  if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
-    (window as any).gtag('event', action, {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+    window.gtag('event', action, {
       event_category: category,
       event_label: label,
       value: value,

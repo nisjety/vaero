@@ -3,7 +3,7 @@ import { authenticateUser } from '../middleware/auth.middleware';
 import { aiRateLimit } from '../middleware/rateLimit.middleware';
 import {
   getDailySummary,
-  getActivitySuggestion,
+  getPersonalizedActivity,
   getPackingList,
   askAI,
   getAIHistory,
@@ -16,7 +16,7 @@ router.use(authenticateUser);
 
 // AI routes with rate limiting
 router.get('/daily-summary', getDailySummary);
-router.get('/activity', getActivitySuggestion);
+router.get('/activity', getPersonalizedActivity);
 router.post('/packing-list', aiRateLimit, getPackingList);
 router.post('/ask', aiRateLimit, askAI);
 router.get('/history', getAIHistory);

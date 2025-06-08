@@ -15,6 +15,7 @@ model User {
   clerkUserId    String     @unique
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
+  lastActive     DateTime   @default(now())
 
   prefs          UserPrefs?
   devices        Device[]

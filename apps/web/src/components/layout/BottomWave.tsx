@@ -1,24 +1,74 @@
-// Description: A React component that renders a smooth, 
-// animated wave based on hourly temperature readings, 
-// with labels indicating high and low temperatures and time of the day. 
-// The wave height adjusts dynamically based on the current temperature, 
-// creating a visually appealing and informative display.
+// Description: En React-komponent som rendrer en jevn, 
+// animert bølge basert på timevise temperaturavlesninger fra YR, 
+// med etiketter som indikerer høye og lave temperaturer og tid på døgnet. 
+// Bølgehøyden justeres dynamisk basert på nåværende temperatur, 
+// og skaper en visuelt tiltalende og informativ visning.
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useDetailedWeather, useForecast, type DetailedWeatherResponse, type ForecastResponse } from '../../hooks/api';
 
-export const BottomWave = ({ currentTemp = 27 }: { currentTemp?: number }) => {
-  const [hourlyTemps, setHourlyTemps] = useState([
-    { temp: 23, label: "HIGH 23.0 °C" },
-    { temp: 20, label: "HIGH 20 °C" },
-    { temp: 18, label: "LOW 18 °C" },
-    { temp: 15, label: "LOW 15 °C" },
-    { temp: 10, label: "LOW 10 °C" },
-    { temp: 4, label: "LOW 4 °C" },
-    { temp: 14, label: "HIGH 14 °C" },
-    { temp: 11, label: "HIGH 11 °C" },
-    { temp: 19, label: "LOW 19 °C" },
-    { temp: 24, label: "HIGH 24 °C" }
-  ]);
+interface TempPoint {
+  temp: number;
+  label: string;
+  time: string;
+}
+
+interface BottomWaveProps {
+  lat?: number;
+  lon?: number;
+}
+
+export const BottomWave = ({ lat = 59.9139, lon = 10.7522 }: BottomWaveProps) => {
+  const { data: weatherData, isLoading: isWeatherLoading } = useDetailedWeather(lat, lon);
+  const { data: forecastData, isLoading: isForecastLoading } = useForecast(lat, lon, 24, 7);
+
+  const isLoading = isWeatherLoading || isForecastLoading;
+
+  // Prepare hourly temperature data for the next 12-24 hours
+  const hourlyTemps = React.useMemo(() => {
+    const weather = weatherData as DetailedWeatherResponse | undefined;
+    const forecast = forecastData as ForecastResponse | undefined;
+    
+    if (!forecast?.hourly || !Array.isArray(forecast.hourly)) {
+      // Fallback mock data if no real data available
+      return [
+        { temp: 23, label: "HØY 23.0 °C", time: "00" },
+        { temp: 20, label: "HØY 20 °C", time: "02" },
+        { temp: 18, label: "LAV 18 °C", time: "04" },
+        { temp: 15, label: "LAV 15 °C", time: "06" },
+        { temp: 10, label: "LAV 10 °C", time: "08" },
+        { temp: 4, label: "LAV 4 °C", time: "10" },
+        { temp: 14, label: "HØY 14 °C", time: "12" },
+        { temp: 11, label: "HØY 11 °C", time: "14" },
+        { temp: 19, label: "LAV 19 °C", time: "16" },
+        { temp: 24, label: "HØY 24 °C", time: "18" }
+      ];
+    }
+
+    // Use real weather data, take every 2nd hour for better visualization
+    const currentTemp = weather?.current?.temperature || 15;
+    
+    return forecast.hourly
+      .slice(0, 12) // Next 12 hours
+      .filter((_, index: number) => index % 2 === 0) // Every 2nd hour for cleaner display
+      .map((hourData, _index: number) => {
+        const hour = new Date(hourData.time).toLocaleTimeString('nb-NO', { 
+          hour: '2-digit',
+          hour12: false 
+        });
+        
+        const isHigh = hourData.temperature > currentTemp;
+        const label = `${isHigh ? 'HØY' : 'LAV'} ${Math.round(hourData.temperature)} °C`;
+        
+        return {
+          temp: hourData.temperature,
+          label,
+          time: hour
+        };
+      });
+  }, [weatherData, forecastData]);
+
+  const currentTemp = (weatherData as DetailedWeatherResponse | undefined)?.current?.temperature || 15;
 
   // Calculate wave height based on temperature difference from current temp
   const getWaveHeight = (temp: number): number => {
@@ -35,7 +85,7 @@ export const BottomWave = ({ currentTemp = 27 }: { currentTemp?: number }) => {
     const width = 1920;
     const segmentWidth = width / (hourlyTemps.length - 1);
     
-    const points = hourlyTemps.map((temp, i) => ({
+    const points = hourlyTemps.map((temp: TempPoint, i: number) => ({
       x: i * segmentWidth,
       y: getWaveHeight(temp.temp)
     }));
@@ -64,23 +114,24 @@ export const BottomWave = ({ currentTemp = 27 }: { currentTemp?: number }) => {
     return path;
   };
 
-  // Auto-update temperatures every hour (simulated)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHourlyTemps(prev => {
-        const newTemps = [...prev.slice(1)];
-        const newTemp = Math.floor(Math.random() * 30) + 5; // Random temp between 5-35°C
-        const isHigh = newTemp > currentTemp;
-        newTemps.push({
-          temp: newTemp,
-          label: `${isHigh ? 'HIGH' : 'LOW'} ${newTemp} °C`
-        });
-        return newTemps;
-      });
-    }, 5000); // Update every 5 seconds for demo
-
-    return () => clearInterval(interval);
-  }, [currentTemp]);
+  if (isLoading) {
+    return (
+      <div className="temperature-wave">
+        <div className="wave-container">
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100%',
+            color: 'rgba(255, 255, 255, 0.5)',
+            fontSize: '12px'
+          }}>
+            Laster værdata...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -241,7 +292,7 @@ export const BottomWave = ({ currentTemp = 27 }: { currentTemp?: number }) => {
 
           {/* Temperature labels */}
           <div className="temperature-labels">
-            {hourlyTemps.map((reading, index) => (
+            {hourlyTemps.map((reading: TempPoint, index: number) => (
               <span 
                 key={index} 
                 className={`temp-label ${reading.temp > currentTemp ? 'high' : 'low'}`}

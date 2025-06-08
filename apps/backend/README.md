@@ -6,7 +6,7 @@ Node.js + TypeScript + Express + Prisma + Redis + Clerk v2 + OpenAI backend for 
 
 - **Weather API**: Integration with Yr.no (Norwegian Meteorological Institute)
 - **AI Services**: OpenAI GPT-4 for clothing suggestions, daily summaries, activity recommendations
-- **Authentication**: Clerk v2 with JWT Session Tokens
+- **Authentication**: Clerk Express v1.5+ with JWT Session Tokens (replaces deprecated clerk-sdk-node)
 - **Database**: PostgreSQL with Prisma ORM
 - **Caching**: Redis for weather data and rate limiting
 - **Push Notifications**: Expo Push and Web Push for weather alerts
@@ -19,7 +19,7 @@ Node.js + TypeScript + Express + Prisma + Redis + Clerk v2 + OpenAI backend for 
 - **Framework**: Express.js
 - **Database**: PostgreSQL with Prisma ORM v7
 - **Cache**: Redis with ioredis
-- **Authentication**: Clerk v2
+- **Authentication**: Clerk Express v1.5+
 - **AI**: OpenAI GPT-4
 - **Queue**: BullMQ
 - **Validation**: Zod
@@ -83,12 +83,16 @@ The server will start on http://localhost:4000
 ## API Endpoints
 
 ### Authentication
-All endpoints require Clerk authentication via `Authorization: Bearer <token>` header.
+Most endpoints require Clerk authentication via `Authorization: Bearer <token>` header, except for the public endpoints below.
 
-### Weather
+### Public Endpoints (No Auth Required)
+- `GET /health` - Server health status
+- `GET /api/weather/current?lat={lat}&lon={lon}` - Get basic weather data
+
+### Weather (Auth Required)
 - `GET /api/weather?lat={lat}&lon={lon}` - Get weather with AI clothing suggestions
 
-### AI Services
+### AI Services (Auth Required)
 - `GET /api/ai/daily-summary?lat={lat}&lon={lon}` - Daily weather summary
 - `GET /api/ai/activity?lat={lat}&lon={lon}&date={YYYY-MM-DD}` - Activity suggestions
 - `POST /api/ai/packing-list` - Travel packing list
@@ -100,8 +104,7 @@ All endpoints require Clerk authentication via `Authorization: Bearer <token>` h
 - `POST /api/users/me/device` - Register device for notifications
 - `DELETE /api/users/me/device/:deviceId` - Unregister device
 
-### Health Check
-- `GET /health` - Server health status
+
 
 ## Database Schema
 
@@ -214,7 +217,12 @@ ALLOWED_ORIGIN="https://your-frontend-domain.com"
 
 ## API Examples
 
-### Get Weather with Clothing Suggestions
+### Public Endpoint - Get Current Weather (No Auth Required)
+```bash
+curl -X GET "http://localhost:4000/api/weather/current?lat=59.91&lon=10.75"
+```
+
+### Get Weather with Clothing Suggestions (Auth Required)
 ```bash
 curl -X GET "http://localhost:4000/api/weather?lat=59.91&lon=10.75" \
   -H "Authorization: Bearer YOUR_CLERK_TOKEN"
