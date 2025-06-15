@@ -46,13 +46,13 @@ export default function Home() {
 
         {/* Main Content Grid */}
         <div className="flex-1 grid grid-cols-12 gap-20 px-18 pt-4 pb-16 overflow-hidden max-h-[calc(100vh-130px)]">
-          
+
           {/* Left Column - Weather Description & City Temps */}
-          <div className="col-span-12 lg:col-span-4 flex flex-col gap-0 h-full justify-center bottom-15 left-5 relative">
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-0 h-full justify-center bottom-30 left-5 relative">
             <div className="flex-shrink-0">
               <WeatherDescription />
             </div>
-            <div className="flex-shrink-0 relative right-10 bottom-8">
+            <div className="flex-shrink-0 relative right-10 bottom-10">
               <CityTemperatures />
             </div>
           </div>
@@ -63,28 +63,28 @@ export default function Home() {
           </div>
 
           {/* Right Column - Temperature & Metrics */}
-          <div className="col-span-12 lg:col-span-4 flex flex-col gap-16 h-full justify-center top-10 relative">
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-16 h-full justify-center">
             {/* Main Temperature Display positioned at top */}
             <div className="flex-shrink-0">
               <MainTemperatureDisplay />
             </div>
-            
+
             {/* Metrics Panel below with proper spacing */}
-            <div className="relative flex-shrink-0 left-38 bottom-10">
+            <div className="relative flex-shrink-0 left-38 bottom-23">
               <MetricsPanel />
             </div>
           </div>
         </div>
 
         {/* Bottom Section - Forecast Dashboard */}
-        <div className="absolute bottom-35 left-22 z-20">
+        <div className="absolute bottom-35 left-22 z-20 top-142">
           <div className="w-full">
             <ForecastDashboard />
           </div>
         </div>
 
         {/* Bottom Wave */}
-        <div className="absolute bottom-2 left-0 right-0 z-10">
+        <div className="absolute bottom-0 left-0 right-0 z-10">
           <BottomWave />
         </div>
       </div>

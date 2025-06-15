@@ -16,20 +16,24 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Weather Forecast Dashboard",
-  description: "Beautiful weather dashboard with real-time forecasts and modern design.",
-  keywords: ["weather", "forecast", "dashboard", "nextjs", "modern design"],
-  authors: [{ name: "Weather Dashboard Team" }],
+  title: "Væro - Værvarsel Dashboard",
+  description: "Vakker værvarsel dashboard med sanntids prognoser og moderne design.",
+  keywords: ["vær", "værvarsel", "dashboard", "norge", "norsk", "meteorologi"],
+  authors: [{ name: "Væro Team" }],
+  other: {
+    'google': 'notranslate',
+    'content-language': 'no',
+  },
   openGraph: {
-    title: "Weather Forecast Dashboard",
-    description: "Beautiful weather dashboard with real-time forecasts and modern design.",
+    title: "Væro - Værvarsel Dashboard",
+    description: "Vakker værvarsel dashboard med sanntids prognoser og moderne design.",
     type: "website",
-    locale: "en_US",
+    locale: "no",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Weather Forecast Dashboard",
-    description: "Beautiful weather dashboard with real-time forecasts and modern design.",
+    title: "Væro - Værvarsel Dashboard",
+    description: "Vakker værvarsel dashboard med sanntids prognoser og moderne design.",
   },
 };
 
@@ -46,17 +50,18 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
-      <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <html lang="no" className={`${inter.variable} ${jetbrainsMono.variable}`}>
         <body className="antialiased h-screen w-screen overflow-hidden">
           {/* 3D Clouds Background Layer */}
           <div className="fixed inset-0 z-0">
             <ThreeClouds />
           </div>
-          
+
           {/* Main Content Layer */}
           <div className="relative z-10 h-full w-full">
             <Providers>{children}</Providers>
           </div>
+
         </body>
       </html>
     </ClerkProvider>

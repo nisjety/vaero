@@ -19,8 +19,8 @@ export const HeaderSection = ({ currentTime, lat = 59.9139, lon = 10.7522 }: Hea
   const { data: astroData } = useAstronomicalData(lat, lon);
 
   // Norwegian time formatting (24-hour format)
-  const timeString = currentTime.toLocaleTimeString('nb-NO', { 
-    hour: '2-digit', 
+  const timeString = currentTime.toLocaleTimeString('nb-NO', {
+    hour: '2-digit',
     minute: '2-digit',
     hour12: false
   });
@@ -37,16 +37,16 @@ export const HeaderSection = ({ currentTime, lat = 59.9139, lon = 10.7522 }: Hea
 
   // Determine day/night based on actual sunrise/sunset data
   const isNightTime = React.useMemo(() => {
-    if (!astroData?.sun) {
+    if (!astroData?.astronomical?.sun) {
       // Fallback to simple hour check if no astronomical data
       const hour = currentTime.getHours();
       return hour >= 20 || hour <= 6;
     }
 
     const now = currentTime.getTime();
-    const sunrise = new Date(astroData.sun.sunrise).getTime();
-    const sunset = new Date(astroData.sun.sunset).getTime();
-    
+    const sunrise = new Date(astroData.astronomical.sun.sunrise).getTime();
+    const sunset = new Date(astroData.astronomical.sun.sunset).getTime();
+
     return now < sunrise || now > sunset;
   }, [currentTime, astroData]);
 
@@ -335,7 +335,7 @@ export const HeaderSection = ({ currentTime, lat = 59.9139, lon = 10.7522 }: Hea
           }
         }
       `}</style>
-      
+
       <header className="header-section">
         {/* Left Side - Logo and Navigation */}
         <div className="header-left">
@@ -344,7 +344,7 @@ export const HeaderSection = ({ currentTime, lat = 59.9139, lon = 10.7522 }: Hea
               <div className="header-logo">V</div>
               <div className="header-brand">Væro</div>
             </div>
-            
+
             <nav className="header-nav">
               <Link href="/" className="nav-item active">Hjem</Link>
               <Link href="/dashboard" className="nav-item">Dashboard</Link>
@@ -376,7 +376,7 @@ export const HeaderSection = ({ currentTime, lat = 59.9139, lon = 10.7522 }: Hea
               <Clock className="w-3.5 h-3.5" />
             </button>
           </div>
-          
+
           <div className="user-section">
             {userLoaded && user ? (
               // User is signed in - show user name and sign out button
@@ -384,8 +384,8 @@ export const HeaderSection = ({ currentTime, lat = 59.9139, lon = 10.7522 }: Hea
                 <span className="user-name">
                   {user.firstName || user.username || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Bruker'}
                 </span>
-                <button 
-                  className="auth-button sign-out" 
+                <button
+                  className="auth-button sign-out"
                   onClick={() => signOut()}
                   title="Logg ut"
                 >
@@ -403,7 +403,7 @@ export const HeaderSection = ({ currentTime, lat = 59.9139, lon = 10.7522 }: Hea
               </SignInButton>
             )}
           </div>
-          
+
           <div className="final-actions">
             <button className="action-btn">
               <Plus className="w-3.5 h-3.5" />

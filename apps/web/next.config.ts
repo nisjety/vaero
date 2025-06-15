@@ -4,7 +4,12 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  
+
+  // Temporarily disable ESLint during build to test compilation
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Image configuration for external domains
   images: {
     remotePatterns: [

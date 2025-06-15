@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +28,7 @@ const userPrefsSchema = z.object({
 
 type UserPrefsFormData = z.infer<typeof userPrefsSchema>;
 
-export default function SettingsPage() {
+export default function SettingsPage(): React.ReactElement {
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLocationLoading, setIsLocationLoading] = useState(false);
@@ -123,7 +123,7 @@ export default function SettingsPage() {
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fjord-blue-400 via-fjord-blue-500 to-arctic-blue-600">
         <HeaderSection currentTime={currentTime} />
-        
+
         <main className="container mx-auto px-4 py-6 max-w-2xl">
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
@@ -139,11 +139,11 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {prefsError && (
+          {prefsError ? (
             <div className="glass-card p-4 mb-6 bg-red-500/20 border border-red-400/30">
               <p className="text-red-100">Kunne ikke laste innstillinger. Prøv å last siden på nytt.</p>
             </div>
-          )}
+          ) : null}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Weather Units */}
@@ -152,7 +152,7 @@ export default function SettingsPage() {
                 <Thermometer className="h-5 w-5 text-white/80" />
                 <h2 className="text-xl font-semibold text-white">Værenheter</h2>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -181,7 +181,7 @@ export default function SettingsPage() {
                 <Clock className="h-5 w-5 text-white/80" />
                 <h2 className="text-xl font-semibold text-white">Tidsformat</h2>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -210,7 +210,7 @@ export default function SettingsPage() {
                 <MapPin className="h-5 w-5 text-white/80" />
                 <h2 className="text-xl font-semibold text-white">Standard lokasjon</h2>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
-                
+
                 <button
                   type="button"
                   onClick={handleGetCurrentLocation}
@@ -252,7 +252,7 @@ export default function SettingsPage() {
                   )}
                   Bruk nåværende lokasjon
                 </button>
-                
+
                 {locationError && (
                   <p className="text-sm text-red-300">{locationError}</p>
                 )}
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                 <Palette className="h-5 w-5 text-white/80" />
                 <h2 className="text-xl font-semibold text-white">Stilpreferanser</h2>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                     <option value="non-binary">Ikke-binær</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
                     Stilpreferanse
@@ -307,7 +307,7 @@ export default function SettingsPage() {
                 <Bell className="h-5 w-5 text-white/80" />
                 <h2 className="text-xl font-semibold text-white">Varsler</h2>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
@@ -320,7 +320,7 @@ export default function SettingsPage() {
                     placeholder="0"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
                     Varsel når temperaturen er over (°C)
@@ -332,7 +332,7 @@ export default function SettingsPage() {
                     placeholder="30"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
                     Varsel når nedbørssannsynlighet er over (%)

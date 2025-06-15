@@ -19,11 +19,11 @@ export const formatTemperature = (
   options: TemperatureOptions = {}
 ): string => {
   const { showUnit = true } = options;
-  
+
   if (value === undefined || typeof value !== 'number' || isNaN(value)) {
     return '--';
   }
-  
+
   if (unit === 'imperial') {
     const fahrenheit = Math.round(value * 9 / 5 + 32);
     return showUnit ? `${fahrenheit}°F` : `${fahrenheit}`;
@@ -44,12 +44,12 @@ export const formatTime = (
 ): string => {
   const { hoursOnly = false } = options;
   const date = parseISO(isoString);
-  
+
   if (hoursOnly) {
     const formatString = timeFormat === '12h' ? 'ha' : 'HH';
     return format(date, formatString);
   }
-  
+
   const formatString = timeFormat === '12h' ? 'h:mm a' : 'HH:mm';
   return format(date, formatString);
 };
@@ -65,15 +65,15 @@ export const formatDate = (
 ): string => {
   const { format: formatType = 'full' } = options;
   const date = parseISO(dateString);
-  
+
   if (isToday(date)) {
     return 'Today';
   }
-  
+
   if (isTomorrow(date)) {
     return 'Tomorrow';
   }
-  
+
   switch (formatType) {
     case 'weekday':
       return format(date, 'EEEE');
@@ -170,7 +170,7 @@ export const getWeatherIconUrl = (
     medium: '64',
     large: '128',
   };
-  
+
   const iconSize = sizes[size];
   return `https://api.met.no/images/weathericons/png/${iconSize}/${symbolCode}.png`;
 };
@@ -185,17 +185,17 @@ export const getTimeOfDay = (hour: number): 'dawn' | 'day' | 'evening' | 'night'
 
 export const getTimeBasedGradient = (time?: string): string => {
   if (!time) return 'weather-gradient';
-  
+
   const hour = parseISO(time).getHours();
   const timeOfDay = getTimeOfDay(hour);
-  
+
   const gradients = {
     dawn: 'dawn-gradient',
     day: 'weather-gradient',
     evening: 'aurora-gradient',
     night: 'night-gradient',
   };
-  
+
   return gradients[timeOfDay];
 };
 
@@ -219,7 +219,7 @@ export const categorizeClothesByType = (items: string[]): Record<string, string[
     'hoodie': 'outerwear',
     'cardigan': 'outerwear',
     'blazer': 'outerwear',
-    
+
     // Tops
     'shirt': 'tops',
     'blouse': 'tops',
@@ -227,7 +227,7 @@ export const categorizeClothesByType = (items: string[]): Record<string, string[
     'sweater': 'tops',
     'pullover': 'tops',
     'tank top': 'tops',
-    
+
     // Bottoms
     'jeans': 'bottoms',
     'pants': 'bottoms',
@@ -235,14 +235,14 @@ export const categorizeClothesByType = (items: string[]): Record<string, string[
     'shorts': 'bottoms',
     'skirt': 'bottoms',
     'dress': 'bottoms',
-    
+
     // Footwear
     'boots': 'footwear',
     'shoes': 'footwear',
     'sneakers': 'footwear',
     'sandals': 'footwear',
     'heels': 'footwear',
-    
+
     // Accessories
     'hat': 'accessories',
     'cap': 'accessories',
@@ -251,7 +251,7 @@ export const categorizeClothesByType = (items: string[]): Record<string, string[
     'gloves': 'accessories',
     'sunglasses': 'accessories',
     'umbrella': 'accessories',
-    
+
     // Underwear/Base layers
     'thermal': 'underwear',
     'base layer': 'underwear',
@@ -260,9 +260,14 @@ export const categorizeClothesByType = (items: string[]): Record<string, string[
   };
 
   items.forEach(item => {
+    // Safety check for undefined/null items
+    if (!item || typeof item !== 'string') {
+      return;
+    }
+
     const itemLower = item.toLowerCase();
     let categorized = false;
-    
+
     for (const [key, category] of Object.entries(categoryMap)) {
       if (itemLower.includes(key)) {
         categories[category].push(item);
@@ -270,7 +275,7 @@ export const categorizeClothesByType = (items: string[]): Record<string, string[
         break;
       }
     }
-    
+
     if (!categorized) {
       categories.accessories.push(item);
     }
