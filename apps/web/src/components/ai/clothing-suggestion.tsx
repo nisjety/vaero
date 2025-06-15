@@ -1,4 +1,4 @@
-// src/components/ai/clothing-suggestion.tsx
+// src/components/ai/clothing-suggestion.tsx working on not tested
 "use client";
 
 import { Shirt, Sparkles } from "lucide-react";
